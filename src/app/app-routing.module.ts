@@ -10,7 +10,9 @@ const routes: Routes = [
   {path: 'test-error', component: TestErrorComponent},
   {path: 'not-found', component: NotFoundComponent},
   {path: 'server-error', component: ServerErrorComponent},
-  {path: 'shop', loadChildren: ()=> import('./shop/shop.module').then(m => m.ShopModule)}, //this will be lazy loaded.
+  {path: 'shop', loadChildren: ()=> import('./shop/shop.module').then(m => m.ShopModule)}, //this will be lazy loaded- for shop
+  {path: 'basket', loadChildren: ()=> import('./basket/basket.module').then(m => m.BasketModule)}, //this will be lazy loaded for basket.
+  {path: 'checkout', loadChildren: ()=> import('./checkout/checkout.module').then(m => m.CheckoutModule)}, //this will be lazy loaded for checkout.
   {path: '**', redirectTo: '', pathMatch: 'full'}
 ];
 
