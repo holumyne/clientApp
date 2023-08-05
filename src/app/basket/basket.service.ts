@@ -4,6 +4,7 @@ import { environment } from 'src/environments/environment';
 import { Basket, BasketItem, BasketTotals } from '../shared/models/basket';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../shared/models/product';
+import { DeliveryMethod } from '../shared/models/deliveryMethod';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class BasketService {
   basketSource$ = this.basketSource.asObservable(); //our component will be able to subscribe to this and get the info they want
   private basketTotalSource = new BehaviorSubject<BasketTotals | null>(null);
   basketTotalSource$ = this.basketTotalSource.asObservable();
+  shipping = 0;
 
   constructor(private http: HttpClient) { }
 
@@ -26,14 +28,16 @@ export class BasketService {
   //     )
   // }
 
-  // setShippingPrice(deliveryMethod: DeliveryMethod) {
+   setShippingPrice(deliveryMethod: DeliveryMethod) {
+    this.shipping = deliveryMethod.price;
+    this.calculateTotals();
   //   const basket = this.getCurrentBasketValue();
   //   if (basket) {
   //     basket.shippingPrice = deliveryMethod.price;
   //     basket.deliveryMethodId = deliveryMethod.id;
   //     this.setBasket(basket);
   //   }
-  //}
+   }
 
   getBasket(id: string) {
     return this.http.get<Basket>(this.baseUrl + 'basket?id=' + id).subscribe({
@@ -88,7 +92,7 @@ export class BasketService {
     })
   }
 
-  deleteLocalBasket() {
+  deleteLocalBasket() {     //this will delete the basket locally after the order hv been submitted.
     this.basketSource.next(null);
     this.basketTotalSource.next(null);
     localStorage.removeItem('basket_id');
@@ -125,10 +129,9 @@ export class BasketService {
   private calculateTotals() {
     const basket = this.getCurrentBasketValue();
     if (!basket) return;
-    const shipping = 0;
     const subtotal = basket.items.reduce((a, b) => (b.price * b.quantity) + a, 0); //where a = previous value, b = current value. Any letter can be used for rep.
-    const total = subtotal + shipping;
-    this.basketTotalSource.next({ shipping, total, subtotal });
+    const total = subtotal + this.shipping;
+    this.basketTotalSource.next({ shipping: this.shipping, total, subtotal });
   }
 
   private isProduct(item: Product | BasketItem): item is Product {
