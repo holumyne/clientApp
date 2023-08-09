@@ -19,7 +19,8 @@ export class ShopComponent implements OnInit {
   // typeIdSelected = 0;
   // sortSelected = 'name';
 
-  shopParams = new ShopParams();
+  //shopParams = new ShopParams(); //now moving this to ShopService becos service is singleton, better stored there.
+  shopParams: ShopParams;
   sortOptions = [
     {name: 'Alphabetical', value: 'name'},
     {name: 'Price: Low to high', value: 'priceAsc'},
@@ -27,7 +28,9 @@ export class ShopComponent implements OnInit {
   ];
   totalCount = 0;  
 
-  constructor(private shopService: ShopService) { }
+  constructor(private shopService: ShopService) { 
+    this.shopParams = shopService.getShopParams(); //now initializing this property inside the constructor
+  }
 
   ngOnInit(): void {
     this.getProducts();
@@ -37,11 +40,11 @@ export class ShopComponent implements OnInit {
 
   getProducts() {
    // this.shopService.getProducts(this.brandIdSelected, this.typeIdSelected, this.sortSelected).subscribe({
-      this.shopService.getProducts(this.shopParams).subscribe({
+      this.shopService.getProducts().subscribe({
       next: response => {
         this.products = response.data;   //what to do next--return the product as response        
-         this.shopParams.pageNumber = response.pageIndex;
-         this.shopParams.pageSize = response.pageSize;
+        //  this.shopParams.pageNumber = response.pageIndex;
+        //  this.shopParams.pageSize = response.pageSize; we dont need both anymore becos now stored in our service
          this.totalCount = response.count;
         },
       error: error => console.log(error),  //what to do if there is an error -- log the error into the console.
@@ -70,42 +73,56 @@ export class ShopComponent implements OnInit {
     })
   }
 
-  onBrandSelected(brandId: number){
-    //this.brandIdSelected = brandId;
-    this.shopParams.brandId = brandId;
-    this.shopParams.pageNumber = 1;
+  onBrandSelected(brandId: number) {
+    const params = this.shopService.getShopParams();
+    params.brandId = brandId;
+    params.pageNumber = 1;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onTypeSelected(typeId: number){
-   // this.typeIdSelected = typeId;
-    this.shopParams.typeId = typeId;
-    this.shopParams.pageNumber = 1;
+  onTypeSelected(typeId: number) {
+    const params = this.shopService.getShopParams();
+    params.typeId = typeId;
+    params.pageNumber = 1;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onSortSelected(event: any){
-    //this.sortSelected = event.target.value;
-    this.shopParams.sort = event.target.value;
+  onSortSelected(event: any) {
+    const params = this.shopService.getShopParams();
+    params.sort = event.target.value;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onPageChanged(event: any){
-     if (this.shopParams.pageNumber !== event){
-      this.shopParams.pageNumber = event;
+  onPageChanged(event: any) {
+    const params = this.shopService.getShopParams();
+    if (params.pageNumber !== event) {
+      params.pageNumber = event;
+      this.shopService.setShopParams(params);
+      this.shopParams = params;
       this.getProducts();
-     }
+    }
   }
 
-  onSearch(){
-    this.shopParams.search = this.searchTerm?.nativeElement.value;
-    this.shopParams.pageNumber = 1;
+  onSearch() {
+    const params = this.shopService.getShopParams();
+    params.search = this.searchTerm?.nativeElement.value;
+    params.pageNumber = 1;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onReset(){
+  onReset() {
     if (this.searchTerm) this.searchTerm.nativeElement.value = '';
     this.shopParams = new ShopParams();
+    this.shopService.setShopParams(this.shopParams);
     this.getProducts();
   }
+
 }

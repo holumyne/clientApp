@@ -18,6 +18,11 @@ const routes: Routes = [
     canActivate: [AuthGuard], //this mean you are only authorised to visit this page only if you are logged in
      loadChildren: ()=> import('./checkout/checkout.module').then(m => m.CheckoutModule)  //this will be lazy loaded for checkout.       
   }, 
+  {
+    path: 'orders', 
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./orders/orders.module').then(m => m.OrdersModule)
+  },
   {path: 'account', loadChildren: ()=> import('./account/account.module').then(m => m.AccountModule)}, //this will be lazy loaded for account.
   {path: '**', redirectTo: '', pathMatch: 'full'}
 ];
